@@ -24,3 +24,20 @@ export const createUser = async (user: UnregisteredUser) => {
 
     return node
 }
+
+export const queryUser = async (email: string) => {
+    const session = driver.session()
+
+    const result = await session.run(`
+        MATCH (u:User { email: $email })
+        RETURN u
+    `, {
+        email
+    })
+
+    const node = result.records[0]
+
+    session.close()
+
+    return node
+}
