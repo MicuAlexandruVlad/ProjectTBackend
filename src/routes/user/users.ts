@@ -8,7 +8,7 @@ import redisClient from "../../data/redis"
 import { createUser, queryUser, updateUser } from "../../data/neo4j/users"
 import { setCookie } from "hono/cookie"
 import AuthResponse from "../../data/models/responseData/AuthResponse"
-import { useProtectedRoute } from "./protectedRoute"
+import { useProtectedRoute } from "../protectedRoute"
 import User from "../../data/models/bodyData/User"
 
 const app = new Hono()
