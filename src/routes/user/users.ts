@@ -5,9 +5,11 @@ import UserRoutes from "../RouteConstants"
 import * as bcrypt from 'bcryptjs'
 import UnregisteredUser from "../../data/models/bodyData/UnregisteredUser"
 import redisClient from "../../data/redis"
-import { createUser, queryUser } from "../../data/neo4j/users"
+import { createUser, queryUser, updateUser } from "../../data/neo4j/users"
 import { setCookie } from "hono/cookie"
 import AuthResponse from "../../data/models/responseData/AuthResponse"
+import { useProtectedRoute } from "./protectedRoute"
+import User from "../../data/models/bodyData/User"
 
 const app = new Hono()
 
@@ -86,4 +88,33 @@ app.get(UserRoutes.LOGIN, async (c) => {
     }
 })
 
+app.post(UserRoutes.UPDATE_PROFILE, (c, next) => useProtectedRoute(c, next), async (c) => {
+    const user = await c.req.json<User>()
+    const { id, email, firstName, lastName } = user
+
+    if (firstName && lastName) {
+        try {
+            const userNode = await queryUser(email).catch((err) => {
+                console.log(UserRoutes.UPDATE_PROFILE, 'err ->', err)
+                
+                throw new HTTPException(500, { message: 'Error querying user' })
+            })
+
+            if (userNode) {
+                const result = await updateUser(user)
+
+                c.status(200)
+                return c.json({ message: 'User updated' })
+            } else {
+                throw new HTTPException(404, { message: 'User profile not found' })
+            }
+
+        } catch (err: any) {
+            c.status(err.status)
+            return c.json({ message: err.message })
+        }
+    }
+})
+
 export default app
+

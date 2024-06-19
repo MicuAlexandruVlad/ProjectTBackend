@@ -1,5 +1,6 @@
 import driver from ".";
 import UnregisteredUser from "../models/bodyData/UnregisteredUser";
+import User from "../models/bodyData/User";
 
 export const createUser = async (user: UnregisteredUser) => {
     const session = driver.session()
@@ -33,6 +34,28 @@ export const queryUser = async (email: string) => {
         RETURN u
     `, {
         email
+    })
+
+    const node = result.records[0]
+
+    session.close()
+
+    return node
+}
+
+export const updateUser = async (body: User) => {
+    const {
+        email, firstName, lastName
+    } = body
+
+    const session = driver.session()
+
+    const result = await session.run(`
+        MATCH (u:User { email: $email })
+        SET u.firstName = $firstName, u.lastName = $lastName
+        RETURN u
+    `, {
+        email, firstName, lastName
     })
 
     const node = result.records[0]
