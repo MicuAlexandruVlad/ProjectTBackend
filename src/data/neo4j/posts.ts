@@ -29,7 +29,6 @@ export const createPost = async (post: UnuploadedPost) => {
             p.userId = $userId,
             p.createdAt = $createdAt
         CREATE (u)-[:${neo4jConstants.CREATED_RELATIONSHIP}]->(p)
-        ORDER BY p.createdAt DESC
         RETURN p
     `
 
@@ -61,6 +60,7 @@ export const getUserPosts = async (userId: number) => {
                 username: user.username,
                 profilePhotoUrl: user.profilePhotoUrl
             } AS user
+        ORDER BY post.createdAt DESC
     `
 
     const result = await session.run(query, { userId })
