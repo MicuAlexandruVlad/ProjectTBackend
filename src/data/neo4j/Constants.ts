@@ -4,4 +4,6 @@ export const neo4jConstants = {
     USERNAME: 'neo4j',
     PASSWORD: 'testpass',
     USER_ROLE: 'User',
+    POST_ROLE: 'Post',
+    CREATED_RELATIONSHIP: 'CREATED'
 }

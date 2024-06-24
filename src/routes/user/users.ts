@@ -16,7 +16,7 @@ const app = new Hono()
 app.post(UserRoutes.REGISTER, async (c) => {
     const { email, password, firstName, lastName, username } = await c.req.json<UnregisteredUser>()
 
-    console.log(firstName, lastName)
+    console.log(firstName, lastName, username)
 
     if (email && password) {
         const hashedPassword = await bcrypt.hash(password, 10)

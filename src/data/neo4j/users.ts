@@ -1,6 +1,7 @@
 import driver from ".";
 import UnregisteredUser from "../models/bodyData/UnregisteredUser";
 import User from "../models/bodyData/User";
+import { neo4jConstants } from "./Constants";
 
 export const createUser = async (user: UnregisteredUser) => {
     const session = driver.session()
@@ -8,11 +9,11 @@ export const createUser = async (user: UnregisteredUser) => {
     const { email, password, firstName, lastName, username } = user
 
     const result = await session.run(`
-        CREATE (u:User {
+        CREATE (u:${neo4jConstants.USER_ROLE} {
             email: $email,
             password: $password,
             firstName: $firstName,
-            lastName: $lastName
+            lastName: $lastName,
             username: $username
         })
         RETURN u

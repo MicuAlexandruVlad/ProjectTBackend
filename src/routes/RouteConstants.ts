@@ -11,4 +11,5 @@ export default class UserRoutes {
 export class PostRoutes {
     static readonly POST_BASE_ROUTE = '/post'
     static readonly CREATE = '/create'
+    static readonly GET_USER_POSTS = '/get-user-posts'
 }
