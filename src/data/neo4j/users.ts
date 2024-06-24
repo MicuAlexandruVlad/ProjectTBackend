@@ -5,7 +5,7 @@ import User from "../models/bodyData/User";
 export const createUser = async (user: UnregisteredUser) => {
     const session = driver.session()
     
-    const { email, password, firstName, lastName } = user
+    const { email, password, firstName, lastName, username } = user
 
     const result = await session.run(`
         CREATE (u:User {
@@ -13,10 +13,11 @@ export const createUser = async (user: UnregisteredUser) => {
             password: $password,
             firstName: $firstName,
             lastName: $lastName
+            username: $username
         })
         RETURN u
     `, {
-        email, password, firstName, lastName
+        email, password, firstName, lastName, username
     })
 
     const node = result.records[0]
@@ -45,17 +46,17 @@ export const queryUser = async (email: string) => {
 
 export const updateUser = async (body: User) => {
     const {
-        email, firstName, lastName
+        email, firstName, lastName, username
     } = body
 
     const session = driver.session()
 
     const result = await session.run(`
         MATCH (u:User { email: $email })
-        SET u.firstName = $firstName, u.lastName = $lastName
+        SET u.firstName = $firstName, u.lastName = $lastName, u.username = $username
         RETURN u
     `, {
-        email, firstName, lastName
+        email, firstName, lastName, username
     })
 
     const node = result.records[0]

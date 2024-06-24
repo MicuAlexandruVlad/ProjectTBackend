@@ -14,7 +14,7 @@ import User from "../../data/models/bodyData/User"
 const app = new Hono()
 
 app.post(UserRoutes.REGISTER, async (c) => {
-    const { email, password, firstName, lastName } = await c.req.json<UnregisteredUser>()
+    const { email, password, firstName, lastName, username } = await c.req.json<UnregisteredUser>()
 
     console.log(firstName, lastName)
 
@@ -28,7 +28,7 @@ app.post(UserRoutes.REGISTER, async (c) => {
             if (result === 1) {
                 c.status(201)
 
-                const node = await createUser({ email, password, firstName, lastName })
+                const node = await createUser({ email, password, firstName, lastName, username })
 
                 return c.json({ message: 'User created' })
             } else {
@@ -74,9 +74,13 @@ app.get(UserRoutes.LOGIN, async (c) => {
                         id: userNode._fields[0].identity.low,
                         firstName: userNode._fields[0].properties.firstName,
                         lastName: userNode._fields[0].properties.lastName,
-                        email: userNode._fields[0].properties.email
+                        email: userNode._fields[0].properties.email,
+                        username: userNode._fields[0].properties.username
                     }
                 })
+            } else {
+                c.status(401)
+                return c.json({ message: 'Invalid credentials' })
             }
         } else {
             c.status(404)
