@@ -28,7 +28,7 @@ export const createPost = async (post: UnuploadedPost) => {
             p.engagement = $engagement, 
             p.userId = $userId,
             p.createdAt = $createdAt
-        CREATE (u)-[:${neo4jConstants.CREATED_RELATIONSHIP}]->(p)
+        CREATE (u)-[:${neo4jConstants.POSTED_RELATIONSHIP}]->(p)
         RETURN p
     `
 
