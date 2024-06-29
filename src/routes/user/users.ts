@@ -14,21 +14,19 @@ import User from "../../data/models/bodyData/User"
 const app = new Hono()
 
 app.post(UserRoutes.REGISTER, async (c) => {
-    const { email, password, firstName, lastName, username } = await c.req.json<UnregisteredUser>()
+    const unregisteredUser = await c.req.json<UnregisteredUser>()
 
-    console.log(firstName, lastName, username)
-
-    if (email && password) {
-        const hashedPassword = await bcrypt.hash(password, 10)
+    if (unregisteredUser.email && unregisteredUser.password) {
+        const hashedPassword = await bcrypt.hash(unregisteredUser.password, 10)
 
         try {
-            const result = await redisClient.setnx(email, hashedPassword)
+            const result = await redisClient.setnx(unregisteredUser.email, hashedPassword)
             console.log('result', result)
 
             if (result === 1) {
                 c.status(201)
 
-                const node = await createUser({ email, password, firstName, lastName, username })
+                const node = await createUser(unregisteredUser)
 
                 return c.json({ message: 'User created' })
             } else {
@@ -75,7 +73,10 @@ app.get(UserRoutes.LOGIN, async (c) => {
                         firstName: userNode._fields[0].properties.firstName,
                         lastName: userNode._fields[0].properties.lastName,
                         email: userNode._fields[0].properties.email,
-                        username: userNode._fields[0].properties.username
+                        username: userNode._fields[0].properties.username,
+                        followers: userNode._fields[0].properties.followers,
+                        following: userNode._fields[0].properties.following,
+                        posts: userNode._fields[0].properties.posts
                     }
                 })
             } else {
