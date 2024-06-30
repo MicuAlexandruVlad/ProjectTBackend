@@ -45,7 +45,7 @@ export const createPost = async (post: UnuploadedPost) => {
 
     session.close()
 
-    return result.records
+    return result.records[0]
 }
 
 export const getUserPosts = async (userId: number) => {
