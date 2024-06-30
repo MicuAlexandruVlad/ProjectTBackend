@@ -28,6 +28,10 @@ app.post(UserRoutes.REGISTER, async (c) => {
 
                 const node = await createUser(unregisteredUser)
 
+                if (node == null) {
+                    return c.json({ message: 'Username already exists' })
+                }
+
                 return c.json({ message: 'User created' })
             } else {
                 // this propagates to the catch
