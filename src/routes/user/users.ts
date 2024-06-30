@@ -18,18 +18,20 @@ app.post(UserRoutes.REGISTER, async (c) => {
 
     if (unregisteredUser.email && unregisteredUser.password) {
         const hashedPassword = await bcrypt.hash(unregisteredUser.password, 10)
-
         try {
-            const result = await redisClient.setnx(unregisteredUser.email, hashedPassword)
+            const result = await redisClient.get(unregisteredUser.email)
             console.log('result', result)
 
-            if (result === 1) {
+            if (!result) {
                 c.status(201)
 
                 const node = await createUser(unregisteredUser)
 
+
                 if (node == null) {
                     return c.json({ message: 'Username already exists' })
+                } else {
+                    await redisClient.setnx(unregisteredUser.email, hashedPassword)
                 }
 
                 return c.json({ message: 'User created' })
