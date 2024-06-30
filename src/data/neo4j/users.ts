@@ -11,26 +11,24 @@ export const createUser = async (user: UnregisteredUser) => {
     const { email, password, firstName, lastName, username } = user
 
     const result = await session.run(`
-        MERGE (existingUser:${neo4jConstants.USER_ROLE} {username: $username})
-            ON CREATE SET existingUser.email = $email,
-                          existingUser.password = $password,
-                          existingUser.firstName = $firstName,
-                          existingUser.lastName = $lastName
-            WITH existingUser, (existingUser.username = $username) AS userExists
-            WHERE NOT userExists
-            CREATE (u:User {
-                email: $email,
-                password: $password,
-                firstName: $firstName,
-                lastName: $lastName,
-                username: $username
-            })
-            RETURN u
+        OPTIONAL MATCH (existingUser:${neo4jConstants.USER_ROLE} {username: $username})
+        WITH existingUser
+        WHERE existingUser IS NULL
+        CREATE (u:${neo4jConstants.USER_ROLE} {
+            email: $email,
+            password: $password,
+            firstName: $firstName,
+            lastName: $lastName,
+            username: $username
+        })
+        RETURN u
     `, {
         email, password, firstName, lastName, username
     })
 
     const node = result.records[0] ? result.records[0] : null
+
+    console.log(result.records)
 
     session.close()
 
