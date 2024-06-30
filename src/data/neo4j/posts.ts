@@ -52,7 +52,7 @@ export const getUserPosts = async (userId: number) => {
     const session = driver.session()
 
     const query = `
-        MATCH (user:${neo4jConstants.USER_ROLE})-[:CREATED]->(post:${neo4jConstants.POST_ROLE} {userId: $userId})
+        MATCH (user:${neo4jConstants.USER_ROLE})-[:${neo4jConstants.POSTED_RELATIONSHIP}]->(post:${neo4jConstants.POST_ROLE} {userId: $userId})
         RETURN 
             post,
             {
@@ -67,5 +67,5 @@ export const getUserPosts = async (userId: number) => {
 
     session.close()
 
-    return result.records.length > 0 ? result.records : null
+    return result.records.length > 0 ? result.records : []
 }
