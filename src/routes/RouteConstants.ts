@@ -13,3 +13,9 @@ export class PostRoutes {
     static readonly CREATE = '/create'
     static readonly GET_USER_POSTS = '/get-user-posts'
 }
+
+export class RedisRoutes {
+    static readonly REDIS_BASE_ROUTE = '/redis'
+    static readonly NUKE = '/nuke'
+    static readonly GET_USER = '/get-user'
+}
