@@ -5,44 +5,65 @@ import { UnuploadedPost } from "../../data/models/bodyData/Post";
 import { createPost, getUserPosts } from "../../data/neo4j/posts";
 import { incrementCacheValue } from "../../data/redis/cache";
 import { getPostsKey } from "../../data/redis/constants";
+import { HTTPException } from "hono/http-exception";
 
 const app = new Hono()
 
 app.post(PostRoutes.CREATE, (c, next) => useProtectedRoute(c, next), async (c) => {
     const unuploadedPost = await c.req.json<UnuploadedPost>()
 
-    const post = await createPost(unuploadedPost).catch(err => {
-        console.log('Error creating post', err)
-
-        return c.json({
-            message: 'Error creating post'
-        })
+    try {
+        const post = await createPost(unuploadedPost).catch(err => {
+            console.log('Error creating post', err)
     
-    })
-
-    await incrementCacheValue(getPostsKey(unuploadedPost.userId)).catch(err => {
-        console.log('Error incrementing cache value', err)
-
-        return c.json({
-            message: 'Error creating post'
+            throw new HTTPException(500, { message: 'Error creating post' })
+        
         })
-    })
 
-    return c.json({
-        message: 'Post created',
-        post
-    })
+        await incrementCacheValue(getPostsKey(unuploadedPost.userId)).catch(err => {
+            console.log('Error incrementing cache value', err)
+
+            throw new HTTPException(500, { message: 'Error creating post' })
+        })
+
+        if (post) {
+            return c.json({
+                message: 'Post created',
+                post
+            })
+        } else {
+            c.status(400)
+            return c.json({ message: 'Post not created' })
+        }
+    } catch (err: any) {
+        c.status(err.status)
+        return c.json({ message: err.message })
+    }
 })
 
 app.get(PostRoutes.GET_USER_POSTS, (c, next) => useProtectedRoute(c, next), async (c) => {
     const { userId } = c.req.query()
 
-    const posts = await getUserPosts(parseInt(userId))
+    try {
+        const posts = await getUserPosts(parseInt(userId)).catch(err => {
+            console.log('Error getting posts', err)
 
-    return c.json({
-        message: 'Posts retrieved',
-        posts
-    })
+            throw new HTTPException(500, { message: 'Error getting posts' })
+        })
+
+        if (posts) {
+            return c.json({
+                message: 'Posts retrieved',
+                posts
+            })
+        } else {
+            c.status(400)
+            return c.json({ message: 'No posts found' })
+        }
+    } catch (err: any) {
+        c.status(err.status)
+        return c.json({ message: err.message })
+    }
 })
 
 export default app
