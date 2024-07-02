@@ -1,3 +1,4 @@
+import { int } from "neo4j-driver";
 import driver from ".";
 import UnregisteredUser from "../models/bodyData/UnregisteredUser";
 import User from "../models/bodyData/User";
@@ -133,8 +134,6 @@ export const queryUser = async (email: string) => {
             if (missingStats.following) cachePromises.push(saveToCache(followingKey, followingCount!))
             await Promise.all(cachePromises)
 
-            console.log('stats retrieved from db')
-
             return {
                 ...userNode,
                 _fields: [{
@@ -151,6 +150,37 @@ export const queryUser = async (email: string) => {
             await session.close()
         }
     }
+}
+
+export const searchUser = async (
+    query: string,
+    offset: number = 0
+) => {
+    const session = driver.session()
+
+    const result = await session.run(`
+        MATCH (u:${neo4jConstants.USER_ROLE})
+        WHERE toLower(u.firstName) CONTAINS toLower($query)
+        OR toLower(u.lastName) CONTAINS toLower($query)
+        OR toLower(u.username) CONTAINS toLower($query)
+        RETURN {
+            id: ID(u),
+            firstName: u.firstName,
+            lastName: u.lastName,
+            username: u.username
+        }
+        SKIP toInteger($offset)
+        LIMIT 20
+    `, {
+        query, offset: int(offset)
+    })
+
+    const users = result.records
+
+    session.close()
+
+    return users
+
 }
 
 export const updateUser = async (body: User) => {

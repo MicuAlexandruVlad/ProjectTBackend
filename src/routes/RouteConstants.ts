@@ -6,6 +6,7 @@ export default class UserRoutes {
     static readonly LOGOUT = '/logout'
     static readonly COMPLETE_PROFILE = '/complete-profile'
     static readonly UPDATE_PROFILE = '/update-profile'
+    static readonly SEARCH = '/search'
 }
 
 export class PostRoutes {

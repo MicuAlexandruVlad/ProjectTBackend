@@ -5,7 +5,7 @@ import UserRoutes from "../RouteConstants"
 import * as bcrypt from 'bcryptjs'
 import UnregisteredUser from "../../data/models/bodyData/UnregisteredUser"
 import redisClient from "../../data/redis"
-import { createUser, queryUser, updateUser } from "../../data/neo4j/users"
+import { createUser, queryUser, searchUser, updateUser } from "../../data/neo4j/users"
 import { setCookie } from "hono/cookie"
 import AuthResponse from "../../data/models/responseData/AuthResponse"
 import { useProtectedRoute } from "../protectedRoute"
@@ -124,6 +124,41 @@ app.post(UserRoutes.UPDATE_PROFILE, (c, next) => useProtectedRoute(c, next), asy
             c.status(err.status)
             return c.json({ message: err.message })
         }
+    }
+})
+
+app.get(UserRoutes.SEARCH, (c, next) => useProtectedRoute(c, next), async (c) => {
+    const { query, offset } = c.req.query()
+
+    if (query) {
+        try {
+            const res = await searchUser(query, typeof offset === 'string' ? parseInt(offset) : 0).catch(err => {
+                console.log(UserRoutes.SEARCH, 'err ->', err)
+                
+                throw new HTTPException(500, { message: 'Error searching user' })
+            })
+
+            if (res.length === 0) {
+                c.status(200)
+                return c.json({ message: 'No users found', users: [] })
+            } else {
+                const users = res.map((u: any) => {
+                    return {
+                        ...u._fields[0],
+                        id: u._fields[0].id.low,
+                    }
+                
+                })
+                c.status(200)
+                return c.json({ message: 'Users found', users })
+            }            
+        } catch (err: any) {
+            c.status(err.status)
+            return c.json({ message: err.message })
+        }
+    } else {
+        c.status(400)
+        return c.json({ message: 'Request is missing parameters' })
     }
 })
 
