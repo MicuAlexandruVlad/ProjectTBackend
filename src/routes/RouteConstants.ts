@@ -7,6 +7,7 @@ export default class UserRoutes {
     static readonly COMPLETE_PROFILE = '/complete-profile'
     static readonly UPDATE_PROFILE = '/update-profile'
     static readonly SEARCH = '/search'
+    static readonly GET_USER = '/get-user'
 }
 
 export class PostRoutes {

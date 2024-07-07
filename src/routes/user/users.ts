@@ -162,5 +162,44 @@ app.get(UserRoutes.SEARCH, (c, next) => useProtectedRoute(c, next), async (c) =>
     }
 })
 
+app.get(UserRoutes.GET_USER, (c, next) => useProtectedRoute(c, next), async (c) => {
+    const { id } = c.req.query()
+
+    if (id) {
+        try {
+            const userNode = await queryUser(id, true).catch((err) => {
+                console.log(UserRoutes.GET_USER, 'err ->', err)
+                
+                throw new HTTPException(500, { message: 'Error querying user' })
+            })
+
+            if (userNode) {
+                c.status(200)
+                return c.json({
+                    message: 'User found',
+                    user: {
+                        id: userNode._fields[0].identity.low,
+                        firstName: userNode._fields[0].properties.firstName,
+                        lastName: userNode._fields[0].properties.lastName,
+                        email: userNode._fields[0].properties.email,
+                        username: userNode._fields[0].properties.username,
+                        followers: userNode._fields[0].properties.followers,
+                        following: userNode._fields[0].properties.following,
+                        posts: userNode._fields[0].properties.posts
+                    }
+                })
+            } else {
+                throw new HTTPException(404, { message: 'User not found' })
+            }
+        } catch (err: any) {
+            c.status(err.status)
+            return c.json({ message: err.message })
+        }
+    } else {
+        c.status(400)
+        return c.json({ message: 'Request is missing parameters' })
+    }
+})
+
 export default app
 
