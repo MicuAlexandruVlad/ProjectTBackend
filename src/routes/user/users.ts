@@ -163,11 +163,11 @@ app.get(UserRoutes.SEARCH, (c, next) => useProtectedRoute(c, next), async (c) =>
 })
 
 app.get(UserRoutes.GET_USER, (c, next) => useProtectedRoute(c, next), async (c) => {
-    const { id } = c.req.query()
+    const { userId } = c.req.query()
 
-    if (id) {
+    if (userId) {
         try {
-            const userNode = await queryUser(id, true).catch((err) => {
+            const userNode = await queryUser(userId, true).catch((err) => {
                 console.log(UserRoutes.GET_USER, 'err ->', err)
                 
                 throw new HTTPException(500, { message: 'Error querying user' })
