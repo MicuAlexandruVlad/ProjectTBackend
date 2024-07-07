@@ -36,15 +36,23 @@ export const createUser = async (user: UnregisteredUser) => {
     return node
 }
 
-export const queryUser = async (email: string) => {
+export const queryUser = async (query: string, isId: boolean = false) => {
     const session = driver.session()
 
-    const result = await session.run(`
-        MATCH (u:User { email: $email })
-        RETURN u
-    `, {
-        email
-    })
+    const result = isId ?
+        await session.run(`
+            MATCH (u:User)
+            WHERE ID(u) = $id
+            RETURN u
+        `, {
+            id: parseInt(query)
+        })
+        : await session.run(`
+            MATCH (u:User { email: $email })
+            RETURN u
+        `, {
+            email: query
+        })
 
     const userNode = result.records[0] ? result.records[0] as any : null
     
@@ -94,21 +102,21 @@ export const queryUser = async (email: string) => {
             query += `OPTIONAL MATCH (u)-[:${neo4jConstants.POSTED_RELATIONSHIP}]->(p:${neo4jConstants.POST_ROLE}) `
             conditions.push(`COUNT(DISTINCT p) AS postCount`)
         } else {
-            conditions.push(`null AS postCount`)
+            // conditions.push(`null AS postCount`)
         }
 
         if (missingStats.followers) {
             query += `OPTIONAL MATCH (u)<-[:${neo4jConstants.FOLLOWS_RELATIONSHIP}]-(follower:${neo4jConstants.USER_ROLE}) `
             conditions.push(`COUNT(DISTINCT follower) AS followerCount`)
         } else {
-            conditions.push(`null AS followerCount`)
+            // conditions.push(`null AS followerCount`)
         }
 
         if (missingStats.following) {
             query += `OPTIONAL MATCH (u)-[:${neo4jConstants.FOLLOWS_RELATIONSHIP}]->(following:${neo4jConstants.USER_ROLE}) `
             conditions.push(`COUNT(DISTINCT following) AS followingCount`)
         } else {
-            conditions.push(`null AS followingCount`)
+            // conditions.push(`null AS followingCount`)
         }
 
         query += returnClause + conditions.join(', ')
